@@ -1,33 +1,426 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rainbow Snake</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Games — Home</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Make the site title red as requested */
+    .site-header h1 {
+      color: #d12a2a;
+      margin: 0;
+      font-size: 2.25rem;
+      letter-spacing: 0.02em;
+    }
+
+    /* Basic layout improvements so the home page is less brief */
+    .site-header {
+      padding: 1.25rem;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.9));
+    }
+
+    .subtitle {
+      margin: 0.25rem 0 0;
+      color: #444;
+    }
+
+    main {
+      padding: 1.25rem;
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: 1fr;
+    }
+
+    .intro {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    /* Snake card styles */
+    .snake-card {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 1rem;
+      align-items: center;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .snake-canvas-wrap {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: #f7f7f7;
+      padding: 0.5rem;
+      border-radius: 6px;
+    }
+
+    canvas#snakeCanvas {
+      background: #0b2e2e;
+      border-radius: 4px;
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      display: block;
+    }
+
+    .snake-controls {
+      padding: 0.5rem 0;
+    }
+
+    .muted {
+      color: #666;
+      font-size: 0.95rem;
+    }
+
+    .game-meta {
+      display:flex;
+      flex-direction:column;
+      gap:0.5rem;
+    }
+
+    .score {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .small {
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    button {
+      padding: 0.35rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    @media (max-width: 820px) {
+      .snake-card {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
+  <header class="site-header">
+    <h1>ZIBOgames</h1>
+    <p class="subtitle">Choose a game to play — quick, fun, and browser-native</p>
+  </header>
 
-    <div class="game-container">
-        <h1>🌈 Rainbow Snake</h1>
-        
-        <div class="controls">
-            <label>Speed: <span id="speedValue">5</span></label>
-            <input type="range" id="speedRange" min="1" max="10" value="3">
-            <br>
-            <p>Current Score: <span id="score">0</span></p>
+  <main aria-live="polite">
+    <section class="intro" aria-labelledby="welcome-heading">
+      <h2 id="welcome-heading">Welcome to ZIBOgames</h2>
+      <p class="muted">A small collection of lightweight, browser-playable games. Play directly here—no installs required. Use the game list below to explore more titles.</p>
+      <ul>
+        <li>Play fast — games are intentionally small and responsive.</li>
+        <li>Accessible controls — keyboard-first navigation where appropriate.</li>
+        <li>Open-source — feel free to view or contribute to the code.</li>
+      </ul>
+    </section>
+
+    <!-- Snake game displayed directly on the home screen -->
+    <section class="snake-card" aria-labelledby="snake-title">
+      <div class="snake-canvas-wrap" role="region" aria-label="Snake game area">
+        <!-- Canvas uses a fixed logical size to keep gameplay consistent; CSS scales it for different screens -->
+        <canvas id="snakeCanvas" width="400" height="400" aria-hidden="false"></canvas>
+      </div>
+
+      <div class="game-meta">
+        <h3 id="snake-title">Snake</h3>
+        <p class="small">Classic snake game — collect food to grow, avoid hitting walls or yourself. Use arrow keys or WASD to move.</p>
+
+        <div class="snake-controls" role="group" aria-label="Snake controls">
+          <div class="score" aria-live="polite">Score: <span id="snakeScore">0</span></div>
+          <div class="muted">Speed increases slightly as you grow. Press <strong>Space</strong> to pause/resume once the game is started.</div>
+          <div style="margin-top:.5rem;">
+            <button id="snakePlay">Play</button>
+            <button id="snakeRestart">Restart</button>
+            <button id="snakePause" disabled>Pause</button>
+          </div>
         </div>
 
-        <canvas id="gameCanvas" width="400" height="400"></canvas>
-        
-        <button onclick="resetGame()">Reset / Start Game</button>
+        <p class="muted small" style="margin-top: .5rem;">Tip: On mobile, swipe is not implemented — use the on-screen buttons or play on desktop for best experience.</p>
+      </div>
+    </section>
 
-        <div class="leaderboard">
-            <h3>🏆 Top 50 Scores</h3>
-            <ul id="scoreList"></ul>
-        </div>
+    <!-- Existing games container (app.js can still inject other game cards here) -->
+    <div class="games-container" id="gamesContainer" aria-live="polite">
+      <!-- Game cards will be injected here by app.js -->
     </div>
+  </main>
 
-    <script src="script.js"></script>
+  <template id="gameCardTemplate">
+    <article class="game-card">
+      <a class="game-link" href="#">
+        <div class="thumb" aria-hidden="true"></div>
+        <div class="game-info">
+          <h2 class="game-title"></h2>
+        </div>
+      </a>
+    </article>
+  </template>
+
+  <script>
+    // Minimal snake game implementation embedded directly in the home page.
+    // Behavior changes:
+    //  - Game no longer auto-starts on page load. Press "Play" to begin.
+    //  - Initial speed is reduced (slower) and acceleration is gentler.
+    (function() {
+      const canvas = document.getElementById('snakeCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreEl = document.getElementById('snakeScore');
+      const restartBtn = document.getElementById('snakeRestart');
+      const pauseBtn = document.getElementById('snakePause');
+      const playBtn = document.getElementById('snakePlay');
+
+      const cellSize = 20; // logical grid cell size
+      const cols = canvas.width / cellSize; // 20
+      const rows = canvas.height / cellSize; // 20
+
+      let snake = [];
+      let dir = { x: 0, y: 0 }; // heading
+      let nextDir = { x: 0, y: 0 }; // queue next direction to avoid immediate reversal
+      let food = null;
+      let score = 0;
+      let speed = 220; // ms between ticks (slower initial speed)
+      let running = false; // do not start automatically
+      let tickTimer = null;
+      let hasStartedOnce = false; // track if game has been started at least once
+
+      function initState() {
+        snake = [{ x: Math.floor(cols/2), y: Math.floor(rows/2) }];
+        dir = { x: 0, y: 0 };
+        nextDir = { x: 0, y: 0 };
+        placeFood();
+        score = 0;
+        // keep speed as base; if previously changed keep base initial value
+        speed = 220;
+        updateScore();
+        updateButtons();
+      }
+
+      function reset() {
+        snake = [{ x: Math.floor(cols/2), y: Math.floor(rows/2) }];
+        dir = { x: 1, y: 0 };
+        nextDir = { x: 1, y: 0 };
+        placeFood();
+        score = 0;
+        speed = 220; // reset to slower base speed
+        running = false;   // remain paused after a reset; user must press Play
+        updateScore();
+        stopTicks();
+        updateButtons();
+        draw();
+      }
+
+      function startGame() {
+        if (!hasStartedOnce) hasStartedOnce = true;
+        if (running) return;
+        running = true;
+        // ensure there's a direction to start moving; if direction is zero set to right
+        if (dir.x === 0 && dir.y === 0) {
+          dir = { x: 1, y: 0 };
+          nextDir = { x: 1, y: 0 };
+        }
+        startTicks();
+        updateButtons();
+      }
+
+      function placeFood() {
+        const positions = new Set(snake.map(s => s.x + ',' + s.y));
+        let fx, fy;
+        do {
+          fx = Math.floor(Math.random() * cols);
+          fy = Math.floor(Math.random() * rows);
+        } while (positions.has(fx + ',' + fy));
+        food = { x: fx, y: fy };
+      }
+
+      function updateScore() {
+        scoreEl.textContent = score;
+      }
+
+      function draw() {
+        // clear
+        ctx.fillStyle = '#071919';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // draw food
+        if (food) {
+          ctx.fillStyle = '#ffcc00';
+          drawRect(food.x, food.y);
+        }
+
+        // draw snake
+        for (let i = 0; i < snake.length; i++) {
+          const s = snake[i];
+          if (i === 0) {
+            ctx.fillStyle = '#00e0b4';
+          } else {
+            ctx.fillStyle = '#74f2d7';
+          }
+          drawRect(s.x, s.y);
+        }
+
+        // grid (subtle)
+        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+        ctx.lineWidth = 0.5;
+        for (let i = 1; i < cols; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * cellSize + 0.5, 0);
+          ctx.lineTo(i * cellSize + 0.5, canvas.height);
+          ctx.stroke();
+        }
+      }
+
+      function drawRect(x, y) {
+        ctx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
+      }
+
+      function tick() {
+        if (!running) return;
+        dir = nextDir;
+        const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+        // wall collision
+        if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows) {
+          gameOver();
+          return;
+        }
+
+        // self collision
+        if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+          gameOver();
+          return;
+        }
+
+        snake.unshift(head);
+
+        // eat food
+        if (food && head.x === food.x && head.y === food.y) {
+          score += 1;
+          updateScore();
+          placeFood();
+          // gently increase speed every few points (less aggressive)
+          if (score % 4 === 0 && speed > 80) {
+            speed = Math.max(80, Math.floor(speed * 0.95)); // slower acceleration
+            restartTicks();
+          }
+        } else {
+          snake.pop();
+        }
+
+        draw();
+      }
+
+      function gameOver() {
+        running = false;
+        stopTicks();
+        // simple visual feedback: flash head
+        ctx.fillStyle = '#ff5a5a';
+        const h = snake[0];
+        ctx.fillRect(h.x * cellSize + 1, h.y * cellSize + 1, cellSize - 2, cellSize - 2);
+        alert('Game over! Your score: ' + score);
+        updateButtons();
+      }
+
+      function startTicks() {
+        stopTicks();
+        tickTimer = setInterval(tick, speed);
+      }
+
+      function stopTicks() {
+        if (tickTimer) {
+          clearInterval(tickTimer);
+          tickTimer = null;
+        }
+      }
+
+      function restartTicks() {
+        startTicks();
+      }
+
+      function updateButtons() {
+        playBtn.disabled = running;
+        pauseBtn.disabled = !running && !hasStartedOnce; // only enable pause if running or if game was started
+        pauseBtn.textContent = running ? 'Pause' : 'Resume';
+      }
+
+      // Input handling
+      window.addEventListener('keydown', function(e) {
+        const key = e.key;
+        // ignore movement input if game hasn't been started yet
+        if (!hasStartedOnce) return;
+
+        if (key === 'ArrowUp' || key === 'w' || key === 'W') {
+          if (dir.y !== 1) nextDir = { x: 0, y: -1 };
+          e.preventDefault();
+        } else if (key === 'ArrowDown' || key === 's' || key === 'S') {
+          if (dir.y !== -1) nextDir = { x: 0, y: 1 };
+          e.preventDefault();
+        } else if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
+          if (dir.x !== 1) nextDir = { x: -1, y: 0 };
+          e.preventDefault();
+        } else if (key === 'ArrowRight' || key === 'd' || key === 'D') {
+          if (dir.x !== -1) nextDir = { x: 1, y: 0 };
+          e.preventDefault();
+        } else if (key === ' ' || key === 'Spacebar') {
+          // pause/resume only if the game has been started
+          if (hasStartedOnce) {
+            running = !running;
+            if (running) startTicks(); else stopTicks();
+            updateButtons();
+          }
+          e.preventDefault();
+        }
+      });
+
+      playBtn.addEventListener('click', function() {
+        // If the game hasn't begun yet, initialize/reset state first
+        if (!hasStartedOnce) {
+          initState();
+          draw();
+        }
+        startGame();
+      });
+
+      restartBtn.addEventListener('click', function() {
+        reset();
+      });
+
+      pauseBtn.addEventListener('click', function() {
+        // If the game hasn't been started but was initialized, treat this as resume/play
+        if (!hasStartedOnce) {
+          // no-op
+          return;
+        }
+        running = !running;
+        if (running) startTicks(); else stopTicks();
+        updateButtons();
+      });
+
+      // initialize visual state but do not start the game
+      initState();
+      draw();
+    })();
+  </script>
+
+  <script src="app.js"></script>
 </body>
 </html>
