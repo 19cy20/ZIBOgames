@@ -11,37 +11,38 @@ let snake = [];
 let food = {};
 let score = 0;
 let d; 
-let currentSnakeColor = "white"; // Stores the color of the last food eaten
 let isGameRunning = false;
+
+// --- NEW: The main color of the snake ---
+const defaultColor = "#32CD32"; // Lime Green
 
 // Game Loop Variables
 let lastTime = 0; 
 let moveTimer = 0;
-let moveInterval = 200; // Time in ms between snake moves (controlled by slider)
+let moveInterval = 200; 
 
-// Load High Scores
 let highScores = JSON.parse(localStorage.getItem("snakeHighScores")) || [];
 
 // Inputs
 canvas.addEventListener("mousedown", handleMouse);
 document.addEventListener("keydown", direction);
 
-// Update slider display and speed logic instantly
 speedInput.addEventListener("input", function() {
     speedValue.innerText = this.value;
     updateSpeed(this.value);
 });
 
 function updateSpeed(val) {
-    // Level 1 = 400ms delay (Slow), Level 10 = 60ms delay (Fast)
-    // Formula: Start at 450, subtract roughly 40ms per level
+    // Scale 1 (Slow) to 10 (Fast)
     moveInterval = 450 - (val * 40);
 }
 
 function resetGame() {
     snake = [];
-    snake[0] = { x: 10 * box, y: 10 * box, color: "white" };
-    currentSnakeColor = "white";
+    // Start with a head + 2 body parts so we can see the snake
+    snake[0] = { x: 10 * box, y: 10 * box, color: defaultColor };
+    snake[1] = { x: 9 * box, y: 10 * box, color: defaultColor };
+    snake[2] = { x: 8 * box, y: 10 * box, color: defaultColor };
     
     score = 0;
     scoreEl.innerText = score;
@@ -66,6 +67,7 @@ function createFood() {
 }
 
 function getRandomColor() {
+    // Bright, vibrant colors
     return `hsl(${Math.random() * 360}, 100%, 50%)`;
 }
 
@@ -78,7 +80,7 @@ function direction(event) {
 }
 
 function handleMouse(event) {
-    if (!d && !isGameRunning) resetGame(); // Click to start if idle
+    if (!d && !isGameRunning) resetGame(); 
 
     const rect = canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
@@ -96,30 +98,23 @@ function handleMouse(event) {
     }
 }
 
-// --- THE NEW GAME LOOP ---
 function gameLoop(currentTime) {
     if (!isGameRunning) return;
-
     window.requestAnimationFrame(gameLoop);
 
     const deltaTime = currentTime - lastTime;
     lastTime = currentTime;
-
-    // Accumulate time
     moveTimer += deltaTime;
 
-    // Only MOVE the snake if enough time has passed (controlled by slider)
     if (moveTimer > moveInterval) {
         updateGameLogic();
         moveTimer = 0; 
     }
-
-    // Draw every single frame (60fps) so controls feel responsive
     draw();
 }
 
 function updateGameLogic() {
-    if (!d) return; // Don't update if game hasn't started moving
+    if (!d) return; 
 
     let snakeX = snake[0].x;
     let snakeY = snake[0].y;
@@ -129,11 +124,14 @@ function updateGameLogic() {
     if (d == "RIGHT") snakeX += box;
     if (d == "DOWN") snakeY += box;
 
-    // Eating Food
+    // --- COLOR LOGIC CHANGED HERE ---
+    let segmentColor = defaultColor; // Usually, the snake is Green
+    
+    // Logic: If snake eats food
     if (snakeX == food.x && snakeY == food.y) {
         score++;
         scoreEl.innerText = score;
-        currentSnakeColor = food.color; // Update snake color to match food
+        segmentColor = food.color; // BUT if we eat, this specific segment takes the food's color
         createFood();
     } else {
         snake.pop();
@@ -142,10 +140,10 @@ function updateGameLogic() {
     let newHead = {
         x: snakeX,
         y: snakeY,
-        color: currentSnakeColor // Head takes the currently active color
+        color: segmentColor // Apply the color determined above
     };
 
-    // Collision Detection
+    // Collision
     if (snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
         isGameRunning = false;
         saveScore(score);
@@ -157,21 +155,25 @@ function updateGameLogic() {
 }
 
 function draw() {
-    // Clear screen
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw Snake
     for (let i = 0; i < snake.length; i++) {
         ctx.fillStyle = snake[i].color;
         ctx.fillRect(snake[i].x, snake[i].y, box, box);
-        ctx.strokeStyle = "black";
+        
+        // Draw a border around segments so we can see the colors clearly
+        ctx.strokeStyle = "#111"; 
         ctx.strokeRect(snake[i].x, snake[i].y, box, box);
     }
 
     // Draw Food
     ctx.fillStyle = food.color;
     ctx.fillRect(food.x, food.y, box, box);
+    
+    // Draw a white border around the food to make it pop
+    ctx.strokeStyle = "white";
+    ctx.strokeRect(food.x, food.y, box, box);
 }
 
 function collision(newHead, array) {
@@ -198,6 +200,5 @@ function drawLeaderboard() {
     ).join('');
 }
 
-// Initial Load
 drawLeaderboard();
 resetGame();
