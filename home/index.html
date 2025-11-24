@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Games — Home</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>ZIBOgames</h1>
+    <p class="subtitle">Choose a game to play</p>
+  </header>
+
+  <main class="games-container" id="gamesContainer" aria-live="polite">
+    <!-- Game cards will be injected here by app.js -->
+  </main>
+
+  <template id="gameCardTemplate">
+    <article class="game-card">
+      <a class="game-link" href="#">
+        <div class="thumb" aria-hidden="true"></div>
+        <div class="game-info">
+          <h2 class="game-title"></h2>
+        </div>
+      </a>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
